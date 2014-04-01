@@ -1,0 +1,28 @@
+---
+- name: install python module
+  yum: name=MySQL-python state=present
+  tags: db
+
+# mysql を yum で入れていない場合は、MySQL-python ではなく以下で install
+# - name: install python
+#   yum: name={{ item }} state=present
+#   with_items:
+#     - python-devel
+#     - python-setuptools
+#
+# - name: install pip
+#   easy_install: name=pip
+#
+# - name: install mysql-python
+#   pip: name=mysql-python
+
+- name: create db for Movable Type
+  mysql_db: name={{ dbname }} state=present encoding=utf8
+  tags: db
+
+- name: create db user forn Movable Type
+  mysql_user: "name={{ dbuser }} password='{{ dbpassword }}' priv={{ dbname }}.*:ALL,GRANT host='{{ item }}' state=present"
+  with_items:
+    - "%"
+    - localhost
+  tags: db

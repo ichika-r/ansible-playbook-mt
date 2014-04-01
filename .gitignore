@@ -1,0 +1,8 @@
+# Backup files
+*~
+**.bak
+**.orig
+.DS_Store
+
+# archive
+**.zip

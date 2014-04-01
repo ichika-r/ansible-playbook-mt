@@ -1,0 +1,19 @@
+#======== REQUIRED SETTINGS ==========
+
+CGIPath        {{ siteurl }}/cgi-bin/mt/
+StaticWebPath  /mt-static/
+StaticFilePath {{ wwwroot }}/mt-static
+PowerCMSFilesDir {{ wwwroot }}/pcms_files
+ImageDriver GD
+
+#======== DATABASE SETTINGS ==========
+
+ObjectDriver DBI::mysql
+Database {{ dbname }}
+DBUser {{ dbuser }}
+DBPassword {{ dbpassword }}
+DBHost {{ dbhost }}
+
+#======== OTHER SETTINGS ==========
+
+DefaultLanguage ja

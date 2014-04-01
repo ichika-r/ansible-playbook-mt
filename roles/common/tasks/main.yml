@@ -1,0 +1,15 @@
+---
+- name: glibc update
+  yum: name=glibc-common state=present
+
+- name: check for locale
+  command: locale -a
+  register: ret
+  changed_when: false
+
+- name: add JP locale
+  command: localedef -f UTF-8 -i ja_JP ja_JP
+  when: ret.stdout.find('ja_JP.utf8') == -1
+
+- name: wget install
+  yum: name=wget state=present

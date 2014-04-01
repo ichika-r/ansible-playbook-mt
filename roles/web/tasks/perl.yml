@@ -1,0 +1,54 @@
+---
+- name: install cpan (system)
+  yum: name=perl-CPAN state=present
+
+- name: install cpanm (system)
+  get_url: url=http://xrl.us/cpanm dest=/usr/bin/cpanm mode=0755
+
+- name: inlstall perlbuild
+  command: cpanm --skip-satisfied {{ item }}
+  register: ret
+  changed_when: "'You have ' not in ret.stdout"
+  with_items:
+    - Test::More    # 先に入れないと Perl::Build でエラーになる
+    - Perl::Build
+
+- name: install perl
+  command: /usr/local/bin/perl-build {{ perl_ver }} /usr/local/perl-{{ perl_ver }} creates=/usr/local/perl-{{ perl_ver }}/bin/perl
+
+- name: symlink for /usr/local/perl
+  file: src=/usr/local/perl-{{ perl_ver }}/ dest=/usr/local/perl state=link
+
+- name: installcpanm
+  command: /usr/local/perl/bin/perl /usr/bin/cpanm App::cpanminus creates=/usr/local/perl/bin/cpanm
+
+- name: intall related liblary
+  yum: name={{ item }} state=present
+  with_items:
+    - mysql-devel
+    - gd-devel
+    - expat-devel
+    - openssl-devel
+    - ImageMagick-devel
+
+- name: install CPAN modules for Movable Type.
+  command: /usr/local/perl/bin/cpanm --skip-satisfied {{ item }}
+  register: ret
+  changed_when: "'You have ' not in ret.stdout"
+  with_items:
+    - Archive::Zip
+    - MIME::Parser
+    - XML::Parser
+    - Authen::SASL
+    - Text::CSV_XS
+    - Crypt::SSLeay
+    - DBI
+    - DBD::mysql
+    - GD
+    - Cache::Memcached
+    - IPC::Run
+    - Archive::Tar
+    - Mail::Sendmail
+    - Crypt::DSA
+    - Imager
+    - Net::LDAP

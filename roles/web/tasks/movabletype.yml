@@ -1,0 +1,59 @@
+---
+- name: create src dir
+  file: path=/usr/local/src state=directory
+  tags: mt
+
+- name: get source file for Movable Type
+  copy: src={{ mt_file }}.zip dest=/usr/local/src/{{ mt_file }}.zip mode=0644 force=no
+  tags: mt
+
+- name: extract zip
+  command: unzip {{ mt_file }}.zip chdir=/usr/local/src/ creates=/usr/local/src/{{ mt_file }}
+  tags: mt
+
+# unarchive は zip の場合、常に展開されてしまう為、unzip で実行
+# (ansible 1.6 以降? だと、"creates" があるらしい
+#  - name: get source file for Movable Type
+#    unarchive: src=files/{{ mt_file }} dest=/usr/local/src/
+
+- name: set source files
+  command: cp -r /usr/local/src/{{ mt_file }}/mt {{ mtroot }} creates=/{{ mtroot }}
+  register: ret
+  tags: mt
+
+- name: set mt-config
+  template: src=mt-config.cgi.j2 dest={{ mtroot }}/mt-config.cgi
+  when: ret.changed == true
+  tags: mt
+
+- name: switch perl version
+  shell: find . -name '*.cgi' | xargs perl -i -ple 's{/usr/bin/perl}{/usr/local/perl/bin/perl}g' chdir={{ mtroot }}
+  when: ret.changed == true
+  tags: mt
+
+- name: change file owner
+  file: path={{ item }} owner=apache group=apache state=directory recurse=yes
+  with_items:
+    - "{{ wwwroot }}"
+    - "{{ cgiroot }}"
+  when: ret.changed == true
+  tags: mt
+
+- name: set file mod
+  shell: "{{ item }}"
+  with_items:
+    - chmod -R g+w {{ mtroot }}
+    - chmod a+x {{ mtroot }}/*.cgi
+    - chmod -R a+w {{ mtroot }}/powercms_files/
+    - chmod -R a+w {{ mtroot }}/mt-static/support/
+    - chmod -R a+w {{ mtroot }}/themes/
+    - chmod a+x {{ mtroot }}/tools/*
+  when: ret.changed == true
+  tags: mt
+
+- name: move static files
+  command: mv {{ mtroot }}/{{ item }} {{ wwwroot }}/ creates={{ wwwroot }}/{{ item }}
+  with_items:
+    - mt-static
+    - powercms_files
+  tags: mt

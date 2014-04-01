@@ -1,0 +1,7 @@
+---
+perl_ver: 5.14.4
+siteurl: http://192.168.33.10
+mt_file: MTA6.0.2-PowerCMSEnterprise4.02
+wwwroot: /var/www/html
+cgiroot: /var/www/cgi-bin
+mtroot: /var/www/cgi-bin/mt
